@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Three.js Love Animation</title>
+    <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        #scene-container { 
+            width: 100vw; 
+            height: 100vh;
+            background: linear-gradient(45deg, #1a237e, #311b92);
+        }
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+    <div id="scene-container"></div>
+    <div class="fixed top-4 right-4">
+        <button id="fullscreen" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg shadow-lg">
+            <i class="bi bi-fullscreen"></i>
+        </button>
+    </div>
+
+    <script>
+        // Three.js scene setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.getElementById('scene-container').appendChild(renderer.domElement);
+
+        // Create characters
+        const geometry1 = new THREE.BoxGeometry(1, 2, 1);
+        const geometry2 = new THREE.BoxGeometry(1, 2, 1);
+        const material1 = new THREE.MeshBasicMaterial({ color: 0xff69b4 });
+        const material2 = new THREE.MeshBasicMaterial({ color: 0x4169e1 });
+        const character1 = new THREE.Mesh(geometry1, material1);
+        const character2 = new THREE.Mesh(geometry2, material2);
+
+        character1.position.x = -1.5;
+        character2.position.x = 1.5;
+        scene.add(character1);
+        scene.add(character2);
+
+        camera.position.z = 5;
+
+        // Animation
+        let time = 0;
+        function animate() {
+            requestAnimationFrame(animate);
+
+            time += 0.01;
+            
+            // Make characters move towards each other
+            const distance = Math.sin(time) * 0.5;
+            character1.position.x = -1.5 + distance;
+            character2.position.x = 1.5 - distance;
+
+            // Create floating hearts
+            if (Math.random() < 0.05) {
+                createHeart();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Create floating hearts in the DOM
+        function createHeart() {
+            const heart = document.createElement('div');
+            heart.innerHTML = '❤️';
+            heart.className = 'heart';
+            heart.style.left = Math.random() * window.innerWidth + 'px';
+            heart.style.top = window.innerHeight + 'px';
+            heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            document.body.appendChild(heart);
+
+            const animation = heart.animate([
+                { transform: `translateY(${window.innerHeight}px)` },
+                { transform: 'translateY(-100%)' }
+            ], {
+                duration: 3000,
+                easing: 'linear'
+            });
+
+            animation.onfinish = () => heart.remove();
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Fullscreen functionality
+        document.getElementById('fullscreen').addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                document.exitFullscreen();
+            }
+        });
+
+        animate();
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
